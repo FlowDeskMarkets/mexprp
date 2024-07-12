@@ -136,6 +136,8 @@ mod opers;
 pub mod errors;
 /// Context struct
 mod context;
+/// Supplementary struct
+mod supplementary;
 /// Number representation(s)
 pub mod num;
 /// Answer enum
@@ -147,6 +149,7 @@ pub use crate::func::Func;
 pub use crate::expr::Expression;
 pub use crate::term::Term;
 pub use crate::context::{Config, Context};
+pub use crate::supplementary::{Supplementary, SupplementaryDataType};
 pub use crate::errors::{EvalError, MathError, ParseError};
 pub use crate::num::Num;
 pub use crate::opers::Calculation;

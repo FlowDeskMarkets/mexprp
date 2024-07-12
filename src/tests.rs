@@ -1,4 +1,4 @@
-use crate::{eval, Answer, Calculation, Context, Expression, Num, Term};
+use crate::{eval, Answer, Calculation, Context, Expression, Num, Term, Supplementary};
 use crate::num::{ComplexFloat};
 
 #[test]
@@ -66,7 +66,7 @@ fn funcs() {
 	let mut context: Context<f64> = Context::new();
 	context.set_func(
 		"sum",
-		|args: &[Term<f64>], ctx: &Context<f64>| -> Calculation<f64> {
+		|args: &[Term<f64>], ctx: &Context<f64>, supp: Option<&Supplementary<f64>>| -> Calculation<f64> {
 			let mut x = Answer::Single(0.0);
 			for arg in args {
 				let a = arg.eval_ctx(ctx)?;
