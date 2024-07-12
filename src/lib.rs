@@ -146,7 +146,7 @@ mod tests;
 pub use crate::func::Func;
 pub use crate::expr::Expression;
 pub use crate::term::Term;
-pub use crate::context::{Config, Context};
+pub use crate::context::{Config, Context, VarType};
 pub use crate::errors::{EvalError, MathError, ParseError};
 pub use crate::num::Num;
 pub use crate::opers::Calculation;
