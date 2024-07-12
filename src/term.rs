@@ -87,8 +87,15 @@ impl<N: Num + 'static> Term<N> {
 			}
 			Term::Var(ref name) => {
 				// Retrieve the value of the variable, if it exists
-				if let Some(var) = ctx.vars.get(name) {
-					var.eval_ctx(ctx)
+				if let Some(var_type) = ctx.vars.get(name) {
+					match var_type {
+						VarType::Single(var) => {
+							var.eval_ctx(ctx)
+						},
+						VarType::Multiple(vars) => {
+							Ok(Answer::Single(vars[0].clone()))
+						}
+					}
 				} else {
 					Err(MathError::UndefinedVariable { name: name.clone() })
 				}

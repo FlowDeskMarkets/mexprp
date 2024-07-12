@@ -92,11 +92,17 @@ use crate::num::Num;
 #[derive(Clone)]
 pub struct Context<N: Num> {
 	/// HashMap of variables
-	pub vars: HashMap<String, Term<N>>,
+	pub vars: HashMap<String, VarType<N>>,
 	/// HashMap of functions
 	pub funcs: HashMap<String, Rc<dyn Func<N>>>,
 	/// The configuration used when evaluating expressions
 	pub cfg: Config,
+}
+
+#[derive(Clone, Debug)]
+pub enum VarType<N: Num> {
+	Single(Term<N>),
+	Multiple(Vec<N>)
 }
 
 /// Struct that holds configuration values used when evaluating expressions
@@ -144,7 +150,11 @@ impl<N: Num + 'static> Context<N> {
 
 	/// Add a variable definition to the context, replacing any existing one with the same name
 	pub fn set_var<T: Into<Term<N>>>(&mut self, name: &str, val: T) {
-		self.vars.insert(name.to_string(), val.into());
+		self.vars.insert(name.to_string(), VarType::Single(val.into()));
+	}
+	/// Add a variable definition to the context, replacing any existing one with the same name
+	pub fn set_buffer<T: Into<Vec<N>>>(&mut self, name: &str, val: T) {
+		self.vars.insert(name.to_string(), VarType::Multiple(val.into()));
 	}
 
 	/// Add a function definition to the context, replacing any existing one with the same name
