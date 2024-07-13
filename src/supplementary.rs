@@ -21,7 +21,7 @@ impl <N: Num> Supplementary<N> {
 }
 
 /// Supported Data Type for Supplementary
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SupplementaryDataType<N: Num> {
 	/// Numeric value
 	Num(N),
