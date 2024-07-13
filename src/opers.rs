@@ -25,8 +25,8 @@ pub(crate) struct Add<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Add<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
-		let b = self.b.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
+		let b = self.b.eval_ctx(ctx, None)?;
 
 		a.op(&b, |a, b| {
 			a.add(b, ctx)
@@ -46,8 +46,8 @@ pub(crate) struct Sub<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Sub<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
-		let b = self.b.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
+		let b = self.b.eval_ctx(ctx, None)?;
 
 		a.op(&b, |a, b| {
 			a.sub(b, ctx)
@@ -67,8 +67,8 @@ pub(crate) struct Mul<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Mul<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
-		let b = self.b.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
+		let b = self.b.eval_ctx(ctx, None)?;
 
 		a.op(&b, |a, b| {
 			a.mul(b, ctx)
@@ -88,8 +88,8 @@ pub(crate) struct Div<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Div<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
-		let b = self.b.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
+		let b = self.b.eval_ctx(ctx, None)?;
 
 		a.op(&b, |a, b| {
 			a.div(b, ctx)
@@ -109,8 +109,8 @@ pub(crate) struct Pow<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Pow<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
-		let b = self.b.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
+		let b = self.b.eval_ctx(ctx, None)?;
 
 		a.op(&b, |a, b| {
 			a.pow(b, ctx)
@@ -130,8 +130,8 @@ pub(crate) struct PlusMinus<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for PlusMinus<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
-		let b = self.b.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
+		let b = self.b.eval_ctx(ctx, None)?;
 
 		let adds = a.op(&b, |a, b| {
 			a.add(b, ctx)
@@ -155,7 +155,7 @@ pub(crate) struct Neg<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Neg<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
 
 		a.op(&N::from_f64(-1.0, ctx)?, |a, b| {
 			a.mul(b, ctx)
@@ -174,7 +174,7 @@ pub(crate) struct Pos<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Pos<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
 
 		Ok(a)
 	}
@@ -191,7 +191,7 @@ pub(crate) struct PosNeg<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for PosNeg<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
 
 		a.unop(|a| {
 			let pos = a;
@@ -231,7 +231,7 @@ pub(crate) struct Percent<N: Num> {
 
 impl<N: Num + 'static> Operate<N> for Percent<N> {
 	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx)?;
+		let a = self.a.eval_ctx(ctx, None)?;
 
 		a.op(&N::from_f64(0.01, ctx)?, |a, b| {
 			a.mul(b, ctx)

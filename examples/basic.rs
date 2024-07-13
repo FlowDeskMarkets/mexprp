@@ -25,7 +25,7 @@ fn main() {
 		};
 
 		// Evaluate the expression or print the error if there was one
-		match expr.eval() {
+		match expr.eval(None) {
 			Ok(val) => println!("\t= {}", val),
 			Err(e) => println!("Failed to evaluate the expression: {}", e),
 		}

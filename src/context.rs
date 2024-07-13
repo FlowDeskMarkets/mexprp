@@ -27,7 +27,7 @@ use crate::num::Num;
 /// let mut context: Context<f64> = Context::new();
 /// context.set_var("x", 4.0);
 /// let expr = Expression::parse_ctx("4x", context).unwrap();
-/// let res = expr.eval(); // Ok(Answer::Single(16.0))
+/// let res = expr.eval(None); // Ok(Answer::Single(16.0))
 /// # assert_eq!(res.unwrap(), Answer::Single(16.0));
 /// ```
 ///
@@ -45,7 +45,7 @@ use crate::num::Num;
 ///
 ///     let mut sum = 0.0;
 ///     for arg in args {
-///         let a = arg.eval_ctx(ctx)?;
+///         let a = arg.eval_ctx(ctx, None)?;
 ///         match a {
 ///             Answer::Single(n) => sum += n,
 ///             Answer::Multiple(ns) => {
@@ -58,7 +58,7 @@ use crate::num::Num;
 ///     Ok(Answer::Single(sum))
 /// });
 /// let expr = Expression::parse_ctx("sum(5, 6, 7, 8)", context).unwrap();
-/// let res = expr.eval(); // Ok(Answer::Single(26.0))
+/// let res = expr.eval(None); // Ok(Answer::Single(26.0))
 /// # assert_eq!(res.unwrap(), Answer::Single(26.0));
 /// ```
 ///
@@ -219,7 +219,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::sin(a, ctx))
 		}
@@ -232,7 +232,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::cos(a, ctx))
 		}
@@ -245,7 +245,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 			let mut extra = Vec::new();
-			let mut max = match args[0].eval_ctx(ctx)? {
+			let mut max = match args[0].eval_ctx(ctx, None)? {
 				Answer::Single(n) => n,
 				Answer::Multiple(mut ns) => {
 					let one = ns.pop().unwrap();
@@ -256,7 +256,7 @@ pub(in crate::context) mod funcs {
 
 			// Try to evaluate the arguments
 			let args: Vec<Answer<N>> = args.iter()
-				.map(|term| term.eval_ctx(ctx))
+				.map(|term| term.eval_ctx(ctx, None))
 				.collect::<Result<Vec<Answer<N>>, MathError>>()?;
 			let mut new_args = Vec::new();
 			// Push each answer of each argument to `new_args`
@@ -283,7 +283,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 			let mut extra = Vec::new();
-			let mut min = match args[0].eval_ctx(ctx)? {
+			let mut min = match args[0].eval_ctx(ctx, None)? {
 				Answer::Single(n) => n,
 				Answer::Multiple(mut ns) => {
 					let one = ns.pop().unwrap();
@@ -294,7 +294,7 @@ pub(in crate::context) mod funcs {
 
 			// Try to evaluate the arguments
 			let args: Vec<Answer<N>> = args.iter()
-				.map(|term| term.eval_ctx(ctx))
+				.map(|term| term.eval_ctx(ctx, None))
 				.collect::<Result<Vec<Answer<N>>, MathError>>()?;
 			let mut new_args = Vec::new();
 			// Push each answer of each argument to `new_args`
@@ -321,7 +321,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::sqrt(a, ctx))
 		}
@@ -334,8 +334,8 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
-			let b = args[1].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
+			let b = args[1].eval_ctx(ctx, None)?;
 
 			a.op(&b, |a, b| Num::nrt(a, b, ctx))
 		}
@@ -348,7 +348,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::abs(a, ctx))
 		}
@@ -361,7 +361,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::tan(a, ctx))
 		}
@@ -374,7 +374,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::asin(a, ctx))
 		}
@@ -387,7 +387,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::acos(a, ctx))
 		}
@@ -400,7 +400,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::atan(a, ctx))
 		}
@@ -413,8 +413,8 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
-			let b = args[1].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
+			let b = args[1].eval_ctx(ctx, None)?;
 
 			a.op(&b, |a, b| Num::atan2(a, b, ctx))
 		}
@@ -427,7 +427,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::floor(a, ctx))
 		}
@@ -440,7 +440,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::ceil(a, ctx))
 		}
@@ -453,7 +453,7 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
 
 			a.unop(|a| Num::round(a, ctx))
 		}
@@ -466,8 +466,8 @@ pub(in crate::context) mod funcs {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx)?;
-			let b = args[1].eval_ctx(ctx)?;
+			let a = args[0].eval_ctx(ctx, None)?;
+			let b = args[1].eval_ctx(ctx, None)?;
 
 			a.op(&b, |a, b| Num::log(a, b, ctx))
 		}

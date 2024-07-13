@@ -9,6 +9,7 @@ use crate::context::*;
 use crate::num::*;
 use crate::answer::*;
 use crate::expr::*;
+use crate::Supplementary;
 
 /// The main representation of parsed equations. It is an operand that can contain an operation between
 /// more of itself. This form is the only one that can be directly evaluated. Does not include it's own
@@ -66,13 +67,13 @@ impl<N: Num + 'static> Term<N> {
 	}
 
 	/// Evaluate the term with the default context
-	pub fn eval(&self) -> Calculation<N> {
+	pub fn eval(&self, supp: Option<&Supplementary<N>>) -> Calculation<N> {
 		let ctx = Context::new();
-		self.eval_ctx(&ctx)
+		self.eval_ctx(&ctx, supp)
 	}
 
 	/// Evaluate the term with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>) -> Calculation<N> {
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<&Supplementary<N>>) -> Calculation<N> {
 		// Evaluate each possible term type
 		match *self {
 			Term::Num(ref num) => Ok(num.clone()),       // Already evaluated
@@ -88,7 +89,7 @@ impl<N: Num + 'static> Term<N> {
 			Term::Var(ref name) => {
 				// Retrieve the value of the variable, if it exists
 				if let Some(var) = ctx.vars.get(name) {
-					var.eval_ctx(ctx)
+					var.eval_ctx(ctx, supp)
 				} else {
 					Err(MathError::UndefinedVariable { name: name.clone() })
 				}

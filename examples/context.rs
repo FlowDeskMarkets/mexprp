@@ -25,7 +25,7 @@ fn main() {
 
 			let mut sum = Answer::Single(0.0);
 			for arg in args {
-				let b = arg.eval_ctx(ctx)?;
+				let b = arg.eval_ctx(ctx, None)?;
 				sum = sum.op(&b, |a, b| Num::add(a, b, ctx))?;
 			}
 
@@ -40,5 +40,5 @@ fn main() {
 	// The expression also needs to be evaluated with a context. This context can be different than the
 	// one it was parsed with, but if it is missing something that is necessary for evaluation the
 	// evaluation will fail.
-	println!("{} = {}", raw, expr.eval().unwrap())
+	println!("{} = {}", raw, expr.eval(None).unwrap())
 }
