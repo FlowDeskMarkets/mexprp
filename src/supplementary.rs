@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use crate::num::Num;
 
 /// A supplementary struct holds the value that cannot be used directly in expression evaluation
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Supplementary<N: Num> {
 	/// HashMap of variables
 	pub vectors: HashMap<String, Vec<SupplementaryDataType<N>>>,
