@@ -81,7 +81,7 @@ impl<N: Num + 'static> Term<N> {
 			Term::Function(ref name, ref args) => {
 				// Execute the function if it exists
 				if let Some(func) = ctx.funcs.get(name) {
-					func.eval(args, ctx, None)
+					func.eval(args, ctx, supp)
 				} else {
 					Err(MathError::UndefinedFunction { name: name.clone() })
 				}
