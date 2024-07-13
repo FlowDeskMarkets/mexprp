@@ -18,21 +18,6 @@ impl <N: Num> Supplementary<N> {
 			map: HashMap::new()
 		}
 	}
-
-	pub fn add_vector(&mut self, key: String, value: SupplementaryDataType<N>) {
-		let current = self.vectors.get(&key);
-		if current.is_some() && current.unwrap().len() > 0 {
-			let mut current = current.unwrap().clone();
-			current.push(value);
-			self.vectors.insert(key, current);
-		} else {
-			self.vectors.insert(key, vec![value]);
-		}
-	}
-
-	pub fn add_hashmap(&mut self, key: String, value: HashMap<String, SupplementaryDataType<N>) {
-		self.map.insert(key, value);
-	}
 }
 
 /// Supported Data Type for Supplementary
