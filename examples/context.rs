@@ -3,7 +3,7 @@
 
 extern crate mexprp;
 
-use mexprp::{Answer, Calculation, Context, Expression, MathError, Num, Supplementary, Term};
+use mexprp::{Answer, Calculation, Context, Expression, MathError, Num, SupplementaryDataAdapter, Term};
 
 fn main() {
 	// A context holds data that can be used in an expression
@@ -18,7 +18,7 @@ fn main() {
 	// that format.
 	context.set_func(
 		"sum",
-		|args: &[Term<f64>], ctx: &Context<f64>, supp: Option<&Supplementary<f64>>| -> Calculation<f64> {
+		|args: &[Term<f64>], ctx: &Context<f64>, _supp: Option<Box<dyn SupplementaryDataAdapter<f64>>>| -> Calculation<f64> {
 			if args.len() < 1 {
 				return Err(MathError::IncorrectArguments);
 			};

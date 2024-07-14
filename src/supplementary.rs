@@ -1,23 +1,13 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 use crate::num::Num;
 
-/// A supplementary struct holds the value that cannot be used directly in expression evaluation
-#[derive(Clone, Debug)]
-pub struct Supplementary<N: Num> {
-	/// HashMap of variables
-	pub vectors: HashMap<String, Vec<SupplementaryDataType<N>>>,
-	/// HashMap of functions
-	pub map: HashMap<String, HashMap<String, SupplementaryDataType<N>>>
-}
-
-impl <N: Num> Supplementary<N> {
-	/// Create a new Supplementary
-	pub fn new() -> Self {
-		Supplementary {
-			vectors: HashMap::new(),
-			map: HashMap::new()
-		}
-	}
+/// A trait for adapter to update and access supplementary data
+pub trait SupplementaryDataAdapter<N: Num>: Debug {
+	/// Retrieve the supplementary data
+	fn get(&self, key: &str) -> Option<&SupplementaryDataType<N>>;
+	/// Update the supplementary data
+	fn set(&mut self, key: String, value: SupplementaryDataType<N>);
 }
 
 /// Supported Data Type for Supplementary
@@ -27,4 +17,8 @@ pub enum SupplementaryDataType<N: Num> {
 	Num(N),
 	/// String value
 	String(String),
+	/// Vector
+	Vector(Vec<SupplementaryDataType<N>>),
+	/// Map
+	Map(HashMap<String, SupplementaryDataType<N>>)
 }

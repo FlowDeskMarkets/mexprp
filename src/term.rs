@@ -9,7 +9,7 @@ use crate::context::*;
 use crate::num::*;
 use crate::answer::*;
 use crate::expr::*;
-use crate::Supplementary;
+use crate::supplementary::SupplementaryDataAdapter;
 
 /// The main representation of parsed equations. It is an operand that can contain an operation between
 /// more of itself. This form is the only one that can be directly evaluated. Does not include it's own
@@ -67,13 +67,13 @@ impl<N: Num + 'static> Term<N> {
 	}
 
 	/// Evaluate the term with the default context
-	pub fn eval(&self, supp: Option<&Supplementary<N>>) -> Calculation<N> {
+	pub fn eval(&self, supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		let ctx = Context::new();
 		self.eval_ctx(&ctx, supp)
 	}
 
 	/// Evaluate the term with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<&Supplementary<N>>) -> Calculation<N> {
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		// Evaluate each possible term type
 		match *self {
 			Term::Num(ref num) => Ok(num.clone()),       // Already evaluated
