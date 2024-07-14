@@ -1,7 +1,5 @@
 use std::fmt;
-
-
-
+use std::sync::Arc;
 use crate::opers::*;
 
 use crate::errors::*;
@@ -43,12 +41,12 @@ impl<N: Num + 'static> Expression<N> {
 	}
 
 	/// Evaluate the expression
-	pub fn eval(&self, supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+	pub fn eval(&self, supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		self.eval_ctx(&self.ctx, supp)
 	}
 
 	/// Evaluate the expression with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		self.term.eval_ctx(ctx, supp)
 	}
 }

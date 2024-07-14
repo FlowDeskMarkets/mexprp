@@ -38,9 +38,10 @@ use crate::num::Num;
 /// mentioned. Defining a custom function will most often look like this.
 ///
 /// ```rust
-/// # use mexprp::{Expression, Context, Term, Calculation, MathError, Answer, SupplementaryDataAdapter};
+/// # use std::sync::Arc;
+/// use mexprp::{Expression, Context, Term, Calculation, MathError, Answer, SupplementaryDataAdapter};
 /// let mut context: Context<f64> = Context::new();
-/// context.set_func("sum", |args: &[Term<f64>], ctx: &Context<f64>, supp: Option<Box<dyn SupplementaryDataAdapter<f64>>>| -> Calculation<f64> {
+/// context.set_func("sum", |args: &[Term<f64>], ctx: &Context<f64>, supp: Option<Arc<dyn SupplementaryDataAdapter<f64>>>| -> Calculation<f64> {
 ///     if args.is_empty() { return Err(MathError::IncorrectArguments); }
 ///
 ///     let mut sum = 0.0;
@@ -202,7 +203,7 @@ impl<N: Num> fmt::Debug for Context<N> {
 
 pub(in crate::context) mod funcs {
 	use std::cmp::Ordering;
-
+	use std::sync::Arc;
 	use crate::context::Context;
 	use crate::term::Term;
 	use crate::errors::MathError;
@@ -214,7 +215,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Sin;
 	impl<N: Num + 'static> Func<N> for Sin {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -227,7 +228,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Cos;
 	impl<N: Num + 'static> Func<N> for Cos {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -240,7 +241,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Max;
 	impl<N: Num + 'static> Func<N> for Max {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.is_empty() {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -278,7 +279,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Min;
 	impl<N: Num + 'static> Func<N> for Min {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.is_empty() {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -316,7 +317,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Sqrt;
 	impl<N: Num + 'static> Func<N> for Sqrt {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -329,7 +330,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Nrt;
 	impl<N: Num + 'static> Func<N> for Nrt {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 2 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -343,7 +344,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Abs;
 	impl<N: Num + 'static> Func<N> for Abs {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -356,7 +357,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Tan;
 	impl<N: Num + 'static> Func<N> for Tan {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -369,7 +370,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Asin;
 	impl<N: Num + 'static> Func<N> for Asin {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -382,7 +383,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Acos;
 	impl<N: Num + 'static> Func<N> for Acos {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -395,7 +396,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Atan;
 	impl<N: Num + 'static> Func<N> for Atan {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -408,7 +409,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Atan2;
 	impl<N: Num + 'static> Func<N> for Atan2 {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 2 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -422,7 +423,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Floor;
 	impl<N: Num + 'static> Func<N> for Floor {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -435,7 +436,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Ceil;
 	impl<N: Num + 'static> Func<N> for Ceil {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -448,7 +449,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Round;
 	impl<N: Num + 'static> Func<N> for Round {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
@@ -461,7 +462,7 @@ pub(in crate::context) mod funcs {
 
 	pub struct Log;
 	impl<N: Num + 'static> Func<N> for Log {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Box<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 2 {
 				return Err(MathError::IncorrectArguments);
 			}
