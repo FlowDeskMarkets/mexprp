@@ -5,7 +5,7 @@ use crate::num::Num;
 /// A trait for adapter to update and access supplementary data
 pub trait SupplementaryDataAdapter<N: Num>: Debug {
 	/// Retrieve the supplementary data
-	fn get(&self, key: &str) -> Option<&SupplementaryDataType<N>>;
+	fn get(&self, key: &str) -> Option<&Vec<SupplementaryDataType<N>>>;
 	/// Update the supplementary data
 	fn set(&mut self, key: String, value: SupplementaryDataType<N>);
 }
