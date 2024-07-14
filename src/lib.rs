@@ -145,7 +145,7 @@ mod answer;
 #[cfg(test)]
 mod tests;
 
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 pub use crate::func::Func;
 pub use crate::expr::Expression;
 pub use crate::term::Term;
@@ -157,11 +157,11 @@ pub use crate::opers::Calculation;
 pub use crate::answer::Answer;
 
 /// Parse and evaluate a string
-pub fn eval<N: Num + 'static>(expr: &str, supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Result<Answer<N>, EvalError> {
+pub fn eval<N: Num + 'static>(expr: &str, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Result<Answer<N>, EvalError> {
 	Ok(Term::parse(expr)?.eval(supp)?)
 }
 
 /// Parse and evaluate a string with the given context
-pub fn eval_ctx<N: Num + 'static>(expr: &str, ctx: &Context<N>, supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Result<Answer<N>, EvalError> {
+pub fn eval_ctx<N: Num + 'static>(expr: &str, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Result<Answer<N>, EvalError> {
 	Ok(Term::parse_ctx(expr, ctx)?.eval_ctx(ctx, supp)?)
 }

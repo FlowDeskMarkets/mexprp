@@ -1,6 +1,6 @@
 use std::fmt;
 use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use crate::op::*;
 use crate::opers::*;
 use crate::parse::*;
@@ -67,13 +67,13 @@ impl<N: Num + 'static> Term<N> {
 	}
 
 	/// Evaluate the term with the default context
-	pub fn eval(&self, supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+	pub fn eval(&self, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
 		let ctx = Context::new();
 		self.eval_ctx(&ctx, supp)
 	}
 
 	/// Evaluate the term with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Arc<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
 		// Evaluate each possible term type
 		match *self {
 			Term::Num(ref num) => Ok(num.clone()),       // Already evaluated

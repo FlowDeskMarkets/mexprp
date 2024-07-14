@@ -3,7 +3,7 @@
 
 extern crate mexprp;
 
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use mexprp::{Answer, Calculation, Context, Expression, MathError, Num, SupplementaryDataAdapter, Term};
 
 fn main() {
@@ -19,7 +19,7 @@ fn main() {
 	// that format.
 	context.set_func(
 		"sum",
-		|args: &[Term<f64>], ctx: &Context<f64>, _supp: Option<Arc<dyn SupplementaryDataAdapter<f64>>>| -> Calculation<f64> {
+		|args: &[Term<f64>], ctx: &Context<f64>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<f64>>>>| -> Calculation<f64> {
 			if args.len() < 1 {
 				return Err(MathError::IncorrectArguments);
 			};
