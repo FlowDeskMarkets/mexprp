@@ -32,7 +32,7 @@ There are several different ways to parse and evaluate an equation.
 This function parses and evaluates a string all at once with the default context. There's also an `eval_ctx()` function which takes a reference to a `Context` as well that will be used instead of the default `Context`. The type parameter can be anything that implements the `Num` trait. Some `Num` types support more operations than others. More info about `Num`s can be found in the `Num` module.
 
 ```rust
-mexprp::eval::<f64>("10 / (2 + 3)"); // Ok(Answer::Single(2.0))
+mexprp::eval::<f64>("10 / (2 + 3)", None); // Ok(Answer::Single(2.0))
 ```
 
 #### With `Expression`
@@ -40,7 +40,7 @@ mexprp::eval::<f64>("10 / (2 + 3)"); // Ok(Answer::Single(2.0))
 
 ```rust
 let expr: Expression<f64> = Expression::parse("3 ^ 4 / 9").unwrap();
-let res = expr.eval(); // Ok(Answer::Single(9.0))
+let res = expr.eval(None); // Ok(Answer::Single(9.0))
 ```
 
 #### Using Contexts
@@ -52,7 +52,7 @@ A `Context` also holds configuration values that define how MEXPRP parses and ev
 let mut context: Context<f64> = Context::new();
 context.set_var("x", 4.0);
 let expr = Expression::parse_ctx("4x", context).unwrap();
-let res = expr.eval(); // Ok(Answer::Single(16.0))
+let res = expr.eval(None); // Ok(Answer::Single(16.0))
 ```
 
 For a list of builtin functions/constants in `Context`s, see the API docs for the `Context` struct. 
@@ -73,13 +73,13 @@ To use another number type, change the type annotation(s) for your MEXPRP types.
 ```rust
 extern crate rug;
 use rug::Rational;
-mexprp::eval::<Rational>("10/15"); // 2/3
+mexprp::eval::<Rational>("10/15", None); // 2/3
 ```
 
 ```rust
 extern crate rug;
 use rug::Complex;
-mexprp::eval::<Complex>("(2+3i)(2-3i)"); // 23 + 2i
+mexprp::eval::<Complex>("(2+3i)(2-3i)", None); // 23 + 2i
 ```
 
 ### Multiple Answers

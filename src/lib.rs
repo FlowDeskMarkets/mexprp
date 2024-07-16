@@ -25,7 +25,7 @@
 //!
 //! ```rust
 //! # let res =
-//! mexprp::eval::<f64>("10 / (2 + 3)"); // Ok(Answer::Single(2.0))
+//! mexprp::eval::<f64>("10 / (2 + 3)", None); // Ok(Answer::Single(2.0))
 //! # assert_eq!(res.unwrap(), mexprp::Answer::Single(2.0));
 //! ```
 //!
@@ -38,7 +38,7 @@
 //! ```rust
 //! # use mexprp::{Expression, Answer};
 //! let expr: Expression<f64> = Expression::parse("3 ^ 4 / 9").unwrap();
-//! let res = expr.eval(); // Ok(Answer::Single(9.0))
+//! let res = expr.eval(None); // Ok(Answer::Single(9.0))
 //! # assert_eq!(res.unwrap(), Answer::Single(9.0));
 //! ```
 //!
@@ -49,7 +49,7 @@
 //! ```rust
 //! # use mexprp::{Term, Answer};
 //! let term: Term<f64> = Term::parse("10 ^ -3").unwrap();
-//! let res = term.eval(); // Ok(Answer::Single(0.001))
+//! let res = term.eval(None); // Ok(Answer::Single(0.001))
 //! # assert_eq!(res.unwrap(), Answer::Single(0.001));
 //! ```
 //!
@@ -88,14 +88,14 @@
 //! # extern crate mexprp;
 //! use rug::Rational;
 //! # use mexprp;
-//! mexprp::eval::<Rational>("10/15"); // 2/3
+//! mexprp::eval::<Rational>("10/15", None); // 2/3
 //!```
 //!
 //! ```rust
 //! # use mexprp::Expression;
 //! # use mexprp::num::ComplexFloat;
 //! let expr: Expression<ComplexFloat> = Expression::parse("(3 + 4i) × (6 - 3i)").unwrap();
-//! let res = expr.eval(); // 30 + 15i
+//! let res = expr.eval(None); // 30 + 15i
 //! ```
 //!
 //! To set the precision of types that let you choose it (currently just
@@ -136,6 +136,8 @@ mod opers;
 pub mod errors;
 /// Context struct
 mod context;
+/// Supplementary struct
+mod supplementary;
 /// Number representation(s)
 pub mod num;
 /// Answer enum
@@ -143,21 +145,23 @@ mod answer;
 #[cfg(test)]
 mod tests;
 
+use std::sync::{Arc, RwLock};
 pub use crate::func::Func;
 pub use crate::expr::Expression;
 pub use crate::term::Term;
 pub use crate::context::{Config, Context};
+pub use crate::supplementary::{SupplementaryDataType, SupplementaryDataAdapter};
 pub use crate::errors::{EvalError, MathError, ParseError};
 pub use crate::num::Num;
 pub use crate::opers::Calculation;
 pub use crate::answer::Answer;
 
 /// Parse and evaluate a string
-pub fn eval<N: Num + 'static>(expr: &str) -> Result<Answer<N>, EvalError> {
-	Ok(Term::parse(expr)?.eval()?)
+pub fn eval<N: Num + 'static>(expr: &str, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Result<Answer<N>, EvalError> {
+	Ok(Term::parse(expr)?.eval(supp)?)
 }
 
 /// Parse and evaluate a string with the given context
-pub fn eval_ctx<N: Num + 'static>(expr: &str, ctx: &Context<N>) -> Result<Answer<N>, EvalError> {
-	Ok(Term::parse_ctx(expr, ctx)?.eval_ctx(ctx)?)
+pub fn eval_ctx<N: Num + 'static>(expr: &str, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Result<Answer<N>, EvalError> {
+	Ok(Term::parse_ctx(expr, ctx)?.eval_ctx(ctx, supp)?)
 }

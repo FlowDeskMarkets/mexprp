@@ -1,6 +1,6 @@
 [package]
 name = "mexprp"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Benny A <virusdownloader7@gmail.com>"]
 
 description = "A math expression parsing and evaluation library"
@@ -21,4 +21,6 @@ default = ["rug"]
 
 [dependencies]
 rug = { version = "1.9", optional = true }
+rust_decimal = { version = "1.35.0", features= ["maths"] }
 thiserror = "1.0.26"
+log = "^0.4.21"

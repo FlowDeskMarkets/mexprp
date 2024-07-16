@@ -3,7 +3,8 @@
 
 extern crate mexprp;
 
-use mexprp::{Answer, Calculation, Context, Expression, MathError, Num, Term};
+use std::sync::{Arc, RwLock};
+use mexprp::{Answer, Calculation, Context, Expression, MathError, Num, SupplementaryDataAdapter, Term};
 
 fn main() {
 	// A context holds data that can be used in an expression
@@ -18,14 +19,14 @@ fn main() {
 	// that format.
 	context.set_func(
 		"sum",
-		|args: &[Term<f64>], ctx: &Context<f64>| -> Calculation<f64> {
+		|args: &[Term<f64>], ctx: &Context<f64>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<f64>>>>| -> Calculation<f64> {
 			if args.len() < 1 {
 				return Err(MathError::IncorrectArguments);
 			};
 
 			let mut sum = Answer::Single(0.0);
 			for arg in args {
-				let b = arg.eval_ctx(ctx)?;
+				let b = arg.eval_ctx(ctx, None)?;
 				sum = sum.op(&b, |a, b| Num::add(a, b, ctx))?;
 			}
 
@@ -40,5 +41,5 @@ fn main() {
 	// The expression also needs to be evaluated with a context. This context can be different than the
 	// one it was parsed with, but if it is missing something that is necessary for evaluation the
 	// evaluation will fail.
-	println!("{} = {}", raw, expr.eval().unwrap())
+	println!("{} = {}", raw, expr.eval(None).unwrap())
 }

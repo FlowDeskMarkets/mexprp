@@ -1,13 +1,11 @@
 use std::fmt;
-
-
-
+use std::sync::{Arc, RwLock};
 use crate::opers::*;
 
 use crate::errors::*;
 use crate::context::*;
 use crate::num::*;
-
+use crate::supplementary::SupplementaryDataAdapter;
 use crate::term::*;
 
 /// The main Expression struct. Contains the string that was originally requested to be parsed, the
@@ -43,13 +41,13 @@ impl<N: Num + 'static> Expression<N> {
 	}
 
 	/// Evaluate the expression
-	pub fn eval(&self) -> Calculation<N> {
-		self.eval_ctx(&self.ctx)
+	pub fn eval(&self, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		self.eval_ctx(&self.ctx, supp)
 	}
 
 	/// Evaluate the expression with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>) -> Calculation<N> {
-		self.term.eval_ctx(ctx)
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		self.term.eval_ctx(ctx, supp)
 	}
 }
 

@@ -43,6 +43,7 @@ mod rugrat;
 mod rugcomplex;
 mod complexfloat;
 mod float64;
+mod decimal;
 
 #[cfg(feature = "rug")]
 pub use self::complexrugrat::ComplexRugRat;
