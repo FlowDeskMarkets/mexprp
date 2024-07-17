@@ -6,10 +6,12 @@ use crate::num::Num;
 pub trait SupplementaryDataAdapter<N: Num>: Debug {
 	/// Retrieve the supplementary data
 	fn get(&self, key: &str) -> Option<&Vec<SupplementaryDataType<N>>>;
-	/// Update the supplementary data
-	fn set(&mut self, key: String, value: SupplementaryDataType<N>);
+	/// Add new supplementary data
+	fn push(&mut self, key: String, value: SupplementaryDataType<N>);
 	/// Optional; remove first X data items
 	fn prune(&mut self, length: usize) {}
+	/// Optional; replace entire data set
+	fn set(&mut self, vec: &Vec<SupplementaryDataType<N>>) {}
 }
 
 /// Supported Data Type for Supplementary
