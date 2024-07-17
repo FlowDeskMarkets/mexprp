@@ -8,6 +8,8 @@ pub trait SupplementaryDataAdapter<N: Num>: Debug {
 	fn get(&self, key: &str) -> Option<&Vec<SupplementaryDataType<N>>>;
 	/// Update the supplementary data
 	fn set(&mut self, key: String, value: SupplementaryDataType<N>);
+	/// Optional; remove first X data items
+	fn prune(&mut self, length: usize) {}
 }
 
 /// Supported Data Type for Supplementary
