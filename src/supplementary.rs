@@ -9,9 +9,9 @@ pub trait SupplementaryDataAdapter<N: Num>: Debug {
 	/// Add new supplementary data
 	fn push(&mut self, key: String, value: SupplementaryDataType<N>);
 	/// Optional; remove first X data items
-	fn prune(&mut self, length: usize) {}
+	fn prune(&mut self, key: String, length: usize) {}
 	/// Optional; replace entire data set
-	fn set(&mut self, vec: &Vec<SupplementaryDataType<N>>) {}
+	fn set(&mut self, key: String, vec: &Vec<SupplementaryDataType<N>>) {}
 }
 
 /// Supported Data Type for Supplementary
