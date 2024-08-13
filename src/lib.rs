@@ -23,9 +23,12 @@
 //! trait. Some `Num` types support more operations than others. More info about `Num`s can be found
 //! in the [`Num`](num) module.
 //!
-//! ```rust
+//!```rust
+//! use std::sync::{Arc, RwLock};
+//! use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+//! let supp = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
 //! # let res =
-//! mexprp::eval::<f64>("10 / (2 + 3)", None); // Ok(Answer::Single(2.0))
+//! mexprp::eval::<f64>("10 / (2 + 3)", supp); // Ok(Answer::Single(2.0))
 //! # assert_eq!(res.unwrap(), mexprp::Answer::Single(2.0));
 //! ```
 //!
@@ -37,8 +40,11 @@
 //!
 //! ```rust
 //! # use mexprp::{Expression, Answer};
+//! use std::sync::{Arc, RwLock};
+//! use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+//! let supp = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
 //! let expr: Expression<f64> = Expression::parse("3 ^ 4 / 9").unwrap();
-//! let res = expr.eval(None); // Ok(Answer::Single(9.0))
+//! let res = expr.eval(supp); // Ok(Answer::Single(9.0))
 //! # assert_eq!(res.unwrap(), Answer::Single(9.0));
 //! ```
 //!
@@ -48,8 +54,11 @@
 //!
 //! ```rust
 //! # use mexprp::{Term, Answer};
+//! use std::sync::{Arc, RwLock};
+//! use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+//! let supp = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
 //! let term: Term<f64> = Term::parse("10 ^ -3").unwrap();
-//! let res = term.eval(None); // Ok(Answer::Single(0.001))
+//! let res = term.eval(supp); // Ok(Answer::Single(0.001))
 //! # assert_eq!(res.unwrap(), Answer::Single(0.001));
 //! ```
 //!
@@ -88,14 +97,20 @@
 //! # extern crate mexprp;
 //! use rug::Rational;
 //! # use mexprp;
-//! mexprp::eval::<Rational>("10/15", None); // 2/3
+//! use std::sync::{Arc, RwLock};
+//! use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+//! let supp = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
+//! mexprp::eval::<Rational>("10/15", supp); // 2/3
 //!```
 //!
 //! ```rust
 //! # use mexprp::Expression;
 //! # use mexprp::num::ComplexFloat;
+//! use std::sync::{Arc, RwLock};
+//! use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+//! let supp = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
 //! let expr: Expression<ComplexFloat> = Expression::parse("(3 + 4i) × (6 - 3i)").unwrap();
-//! let res = expr.eval(None); // 30 + 15i
+//! let res = expr.eval(supp); // 30 + 15i
 //! ```
 //!
 //! To set the precision of types that let you choose it (currently just
@@ -120,48 +135,50 @@
 #[cfg(feature = "rug")]
 extern crate rug;
 
-/// Contains Function trait
-mod func;
-/// Contains methods for parsing equations into token representations
-mod parse;
-/// Contains definitions for Operations
-mod op;
-/// Contains expressions
-mod expr;
-/// Contains terms
-mod term;
-/// Contains implementations for operations
-mod opers;
-/// All the errors
-pub mod errors;
-/// Context struct
-mod context;
-/// Supplementary struct
-mod supplementary;
-/// Number representation(s)
-pub mod num;
 /// Answer enum
 mod answer;
+/// Context struct
+mod context;
+/// All the errors
+pub mod errors;
+/// Contains expressions
+mod expr;
+/// Contains Function trait
+mod func;
+/// Mock Supplementary
+pub mod mock_supplementary_data_adapter;
+/// Number representation(s)
+pub mod num;
+/// Contains definitions for Operations
+mod op;
+/// Contains implementations for operations
+mod opers;
+/// Contains methods for parsing equations into token representations
+mod parse;
+/// Supplementary struct
+pub mod supplementary;
+/// Contains terms
+mod term;
 #[cfg(test)]
 mod tests;
 
-use std::sync::{Arc, RwLock};
-pub use crate::func::Func;
-pub use crate::expr::Expression;
-pub use crate::term::Term;
+pub use crate::answer::Answer;
 pub use crate::context::{Config, Context};
-pub use crate::supplementary::{SupplementaryDataType, SupplementaryDataAdapter};
 pub use crate::errors::{EvalError, MathError, ParseError};
+pub use crate::expr::Expression;
+pub use crate::func::Func;
 pub use crate::num::Num;
 pub use crate::opers::Calculation;
-pub use crate::answer::Answer;
+pub use crate::supplementary::{SupplementaryDataAdapter, SupplementaryDataType};
+pub use crate::term::Term;
+use std::sync::{Arc, RwLock};
 
 /// Parse and evaluate a string
-pub fn eval<N: Num + 'static>(expr: &str, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Result<Answer<N>, EvalError> {
+pub fn eval<N: Num + 'static>(expr: &str, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Result<Answer<N>, EvalError> {
 	Ok(Term::parse(expr)?.eval(supp)?)
 }
 
 /// Parse and evaluate a string with the given context
-pub fn eval_ctx<N: Num + 'static>(expr: &str, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Result<Answer<N>, EvalError> {
+pub fn eval_ctx<N: Num + 'static>(expr: &str, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Result<Answer<N>, EvalError> {
 	Ok(Term::parse_ctx(expr, ctx)?.eval_ctx(ctx, supp)?)
 }

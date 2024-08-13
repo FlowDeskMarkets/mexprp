@@ -1,5 +1,5 @@
-use crate::op::*;
 use crate::errors::*;
+use crate::op::*;
 
 #[derive(Debug, Clone)]
 pub(crate) enum Token {
@@ -93,10 +93,7 @@ fn next_in_op(raw: &str) -> Option<(Token, &str)> {
 			'*' | '×' => Some((Token::Op(Op::In(In::Mul)), &raw[c.len_utf8()..raw.len()])),
 			'/' | '÷' => Some((Token::Op(Op::In(In::Div)), &raw[c.len_utf8()..raw.len()])),
 			'^' => Some((Token::Op(Op::In(In::Pow)), &raw[c.len_utf8()..raw.len()])),
-			'±' => Some((
-				Token::Op(Op::In(In::PlusMinus)),
-				&raw[c.len_utf8()..raw.len()],
-			)),
+			'±' => Some((Token::Op(Op::In(In::PlusMinus)), &raw[c.len_utf8()..raw.len()])),
 			_ => None,
 		}
 	} else {
@@ -110,10 +107,7 @@ fn next_pre_op(raw: &str) -> Option<(Token, &str)> {
 		match c {
 			'-' => Some((Token::Op(Op::Pre(Pre::Neg)), &raw[c.len_utf8()..raw.len()])),
 			'+' => Some((Token::Op(Op::Pre(Pre::Pos)), &raw[c.len_utf8()..raw.len()])),
-			'±' => Some((
-				Token::Op(Op::Pre(Pre::PosNeg)),
-				&raw[c.len_utf8()..raw.len()],
-			)),
+			'±' => Some((Token::Op(Op::Pre(Pre::PosNeg)), &raw[c.len_utf8()..raw.len()])),
 			_ => None,
 		}
 	} else {
@@ -125,14 +119,8 @@ fn next_pre_op(raw: &str) -> Option<(Token, &str)> {
 fn next_post_op(raw: &str) -> Option<(Token, &str)> {
 	if let Some(c) = raw.chars().next() {
 		match c {
-			'!' => Some((
-				Token::Op(Op::Post(Post::Fact)),
-				&raw[c.len_utf8()..raw.len()],
-			)),
-			'%' => Some((
-				Token::Op(Op::Post(Post::Percent)),
-				&raw[c.len_utf8()..raw.len()],
-			)),
+			'!' => Some((Token::Op(Op::Post(Post::Fact)), &raw[c.len_utf8()..raw.len()])),
+			'%' => Some((Token::Op(Op::Post(Post::Percent)), &raw[c.len_utf8()..raw.len()])),
 			_ => None,
 		}
 	} else {
@@ -179,33 +167,12 @@ fn next_comma(raw: &str) -> Option<(Token, &str)> {
 fn get_parse_order(last: Option<&Token>) -> &[TokenFn] {
 	match last {
 		Some(&Token::Paren(Paren::Open)) => &[next_paren, next_name, next_num, next_pre_op],
-		Some(&Token::Paren(Paren::Close)) => &[
-			next_paren,
-			next_comma,
-			next_in_op,
-			next_post_op,
-			next_name,
-			next_num,
-		],
+		Some(&Token::Paren(Paren::Close)) => &[next_paren, next_comma, next_in_op, next_post_op, next_name, next_num],
 		Some(&Token::Op(Op::In(_))) => &[next_paren, next_name, next_num, next_pre_op],
 		Some(&Token::Op(Op::Pre(_))) => &[next_paren, next_name, next_num, next_pre_op],
-		Some(&Token::Op(Op::Post(_))) => &[
-			next_paren,
-			next_comma,
-			next_name,
-			next_in_op,
-			next_post_op,
-			next_num,
-		],
+		Some(&Token::Op(Op::Post(_))) => &[next_paren, next_comma, next_name, next_in_op, next_post_op, next_num],
 		Some(&Token::Num(_)) => &[next_paren, next_comma, next_in_op, next_post_op, next_name],
-		Some(&Token::Name(_)) => &[
-			next_paren,
-			next_comma,
-			next_in_op,
-			next_name,
-			next_post_op,
-			next_num,
-		],
+		Some(&Token::Name(_)) => &[next_paren, next_comma, next_in_op, next_name, next_post_op, next_num],
 		Some(&Token::Comma) => &[next_paren, next_name, next_num, next_pre_op],
 		None => &[next_paren, next_name, next_num, next_pre_op],
 	}
@@ -232,9 +199,7 @@ fn next_token<'a>(raw: &'a str, last: Option<&Token>) -> Result<(Token, &'a str)
 		}
 	}
 
-	Err(ParseError::UnexpectedToken {
-		token: raw.chars().next().unwrap().to_string(),
-	})
+	Err(ParseError::UnexpectedToken { token: raw.chars().next().unwrap().to_string() })
 }
 
 /// Convert a string to a list of tokens

@@ -1,11 +1,11 @@
-use std::fmt;
 use std::cmp::Ordering;
+use std::fmt;
 
-use crate::opers::Calculation;
-use crate::num::Num;
 use crate::answer::Answer;
-use crate::errors::MathError;
 use crate::context::Context;
+use crate::errors::MathError;
+use crate::num::Num;
+use crate::opers::Calculation;
 
 /// A complex number made of a real `f64` and an imaginary `f64`.
 #[derive(Debug, Clone)]
@@ -76,10 +76,7 @@ impl Num for ComplexFloat {
 impl ComplexFloat {
 	/// Returns the complex conjugate of this number
 	pub fn conjugate(&self) -> Self {
-		ComplexFloat {
-			r: self.r,
-			i: -self.i,
-		}
+		ComplexFloat { r: self.r, i: -self.i }
 	}
 }
 

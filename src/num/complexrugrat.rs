@@ -1,12 +1,12 @@
-use std::fmt;
 use std::cmp::Ordering;
+use std::fmt;
 
-use rug::Rational;
-use crate::opers::Calculation;
-use crate::errors::MathError;
 use crate::answer::Answer;
-use crate::num::Num;
 use crate::context::Context;
+use crate::errors::MathError;
+use crate::num::Num;
+use crate::opers::Calculation;
+use rug::Rational;
 
 /// A complex number made of a real part and an imaginary part, both of which are `rug::Rationals`.
 /// Requires the `rug` feature.
@@ -98,10 +98,7 @@ impl Num for ComplexRugRat {
 impl ComplexRugRat {
 	/// Returns the complex conjugate of this number
 	pub fn conjugate(&self) -> Self {
-		ComplexRugRat {
-			r: self.r.clone(),
-			i: -self.i.clone(),
-		}
+		ComplexRugRat { r: self.r.clone(), i: -self.i.clone() }
 	}
 }
 

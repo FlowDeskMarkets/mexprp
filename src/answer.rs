@@ -22,9 +22,11 @@ impl<N: Num> Answer<N> {
 		fn push_answers<N: Num>(answer: Answer<N>, list: &mut Vec<N>) {
 			match answer {
 				Answer::Single(n) => list.push(n),
-				Answer::Multiple(ns) => for n in ns {
-					list.push(n)
-				},
+				Answer::Multiple(ns) => {
+					for n in ns {
+						list.push(n)
+					}
+				}
 			}
 		}
 
@@ -65,9 +67,11 @@ impl<N: Num> Answer<N> {
 		fn push_answers<N: Num>(answer: Answer<N>, list: &mut Vec<N>) {
 			match answer {
 				Answer::Single(n) => list.push(n),
-				Answer::Multiple(ns) => for n in ns {
-					list.push(n)
-				},
+				Answer::Multiple(ns) => {
+					for n in ns {
+						list.push(n)
+					}
+				}
 			}
 		}
 
