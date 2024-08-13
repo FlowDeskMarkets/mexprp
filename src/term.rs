@@ -1,15 +1,15 @@
-use std::fmt;
-use std::rc::Rc;
-use std::sync::{Arc, RwLock};
+use crate::answer::*;
+use crate::context::*;
+use crate::errors::*;
+use crate::expr::*;
+use crate::num::*;
 use crate::op::*;
 use crate::opers::*;
 use crate::parse::*;
-use crate::errors::*;
-use crate::context::*;
-use crate::num::*;
-use crate::answer::*;
-use crate::expr::*;
 use crate::supplementary::SupplementaryDataAdapter;
+use std::fmt;
+use std::rc::Rc;
+use std::sync::{Arc, RwLock};
 
 /// The main representation of parsed equations. It is an operand that can contain an operation between
 /// more of itself. This form is the only one that can be directly evaluated. Does not include it's own
@@ -55,11 +55,7 @@ impl<N: Num + 'static> Term<N> {
 		let raw = raw.trim();
 		let paren_tokens = get_tokens(raw)?;
 		let exprs = paren_to_exprs(paren_tokens, ctx)?;
-		let exprs = if ctx.cfg.implicit_multiplication {
-			insert_operators(exprs)
-		} else {
-			exprs
-		};
+		let exprs = if ctx.cfg.implicit_multiplication { insert_operators(exprs) } else { exprs };
 		let postfix = tokenexprs_to_postfix(exprs);
 		let term = postfix_to_term(postfix, ctx)?;
 
@@ -67,17 +63,17 @@ impl<N: Num + 'static> Term<N> {
 	}
 
 	/// Evaluate the term with the default context
-	pub fn eval(&self, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+	pub fn eval(&self, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		let ctx = Context::new();
 		self.eval_ctx(&ctx, supp)
 	}
 
 	/// Evaluate the term with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		// Evaluate each possible term type
 		match *self {
-			Term::Num(ref num) => Ok(num.clone()),       // Already evaluated
-			Term::Operation(ref oper) => oper.eval(ctx), // Perform the operation with the given context
+			Term::Num(ref num) => Ok(num.clone()),             // Already evaluated
+			Term::Operation(ref oper) => oper.eval(ctx, supp), // Perform the operation with the given context
 			Term::Function(ref name, ref args) => {
 				// Execute the function if it exists
 				if let Some(func) = ctx.funcs.get(name) {
@@ -195,11 +191,7 @@ fn paren_to_exprs<N: Num + 'static>(raw: Vec<ParenToken>, ctx: &Context<N>) -> R
 			}
 			// There should be no commas here, they should have been removed during the Self::tokens_to_args calls
 			// that happen when pushing a function.
-			ParenToken::Comma => {
-				return Err(ParseError::UnexpectedToken {
-					token: String::from(","),
-				})
-			}
+			ParenToken::Comma => return Err(ParseError::UnexpectedToken { token: String::from(",") }),
 		}
 	}
 
@@ -214,10 +206,12 @@ fn paren_to_exprs<N: Num + 'static>(raw: Vec<ParenToken>, ctx: &Context<N>) -> R
 /// Converts a Vec of ParenTokens into a Vec of a Vec of Exprs, splitting them by commas and
 /// then parsing them into Exprs.
 fn tokens_to_args<N: Num + 'static>(raw: Vec<ParenToken>, ctx: &Context<N>) -> Result<Vec<Vec<Expr>>, ParseError> {
-	let args: Vec<&[ParenToken]> = raw.split(|ptoken| match *ptoken {
-		ParenToken::Comma => true,
-		_ => false,
-	}).collect();
+	let args: Vec<&[ParenToken]> = raw
+		.split(|ptoken| match *ptoken {
+			ParenToken::Comma => true,
+			_ => false,
+		})
+		.collect();
 
 	let mut new = Vec::new();
 	for arg in args {
@@ -260,12 +254,7 @@ fn insert_operators(mut raw: Vec<Expr>) -> Vec<Expr> {
 	for texpr in raw {
 		match texpr {
 			Expr::Sub(texprs) => new.push(Expr::Sub(insert_operators(texprs))),
-			Expr::Func(name, args) => new.push(Expr::Func(
-				name,
-				args.into_iter()
-					.map(|texprs| insert_operators(texprs))
-					.collect(),
-			)),
+			Expr::Func(name, args) => new.push(Expr::Func(name, args.into_iter().map(|texprs| insert_operators(texprs)).collect())),
 			t => new.push(t),
 		}
 	}
@@ -325,42 +314,22 @@ fn postfix_to_term<N: Num + 'static>(raw: Vec<Expr>, ctx: &Context<N>) -> Result
 			Expr::Op(op) => {
 				// Push the operation with the last two operands on the stack
 				macro_rules! pop {
-						() => {
-							match stack.pop() {
-								Some(v) => v,
-								None => return Err(ParseError::Expected {
-									expected: Expected::Expression
-								}),
-							}
+					() => {
+						match stack.pop() {
+							Some(v) => v,
+							None => return Err(ParseError::Expected { expected: Expected::Expression }),
 						}
-					}
+					};
+				}
 
 				let oper: Rc<dyn Operate<N>> = match op {
 					Op::In(op) => match op {
-						In::Add => Rc::new(Add {
-							b: pop!(),
-							a: pop!(),
-						}),
-						In::Sub => Rc::new(Sub {
-							b: pop!(),
-							a: pop!(),
-						}),
-						In::Mul => Rc::new(Mul {
-							b: pop!(),
-							a: pop!(),
-						}),
-						In::Div => Rc::new(Div {
-							b: pop!(),
-							a: pop!(),
-						}),
-						In::Pow => Rc::new(Pow {
-							b: pop!(),
-							a: pop!(),
-						}),
-						In::PlusMinus => Rc::new(PlusMinus {
-							b: pop!(),
-							a: pop!(),
-						}),
+						In::Add => Rc::new(Add { b: pop!(), a: pop!() }),
+						In::Sub => Rc::new(Sub { b: pop!(), a: pop!() }),
+						In::Mul => Rc::new(Mul { b: pop!(), a: pop!() }),
+						In::Div => Rc::new(Div { b: pop!(), a: pop!() }),
+						In::Pow => Rc::new(Pow { b: pop!(), a: pop!() }),
+						In::PlusMinus => Rc::new(PlusMinus { b: pop!(), a: pop!() }),
 					},
 					Op::Pre(op) => match op {
 						Pre::Neg => Rc::new(Neg { a: pop!() }),
@@ -393,17 +362,13 @@ fn postfix_to_term<N: Num + 'static>(raw: Vec<Expr>, ctx: &Context<N>) -> Result
 	}
 	if stack.len() > 1 {
 		// If there's leftovers on the stack, oops
-		return Err(ParseError::Expected {
-			expected: Expected::Operator,
-		});
+		return Err(ParseError::Expected { expected: Expected::Operator });
 	}
 
 	if let Some(term) = stack.pop() {
 		Ok(term)
 	} else {
-		Err(ParseError::Expected {
-			expected: Expected::Expression,
-		})
+		Err(ParseError::Expected { expected: Expected::Expression })
 	}
 }
 

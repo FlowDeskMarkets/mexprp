@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::f64::consts;
-use std::rc::Rc;
 use std::fmt;
+use std::rc::Rc;
 
-use crate::term::Term;
 use crate::func::Func;
 use crate::num::Num;
+use crate::term::Term;
 
 /// A context holds values for variables and functions to be used in expressions. It is useful for both
 /// parsing and evaluation expressions. During parsing, all names will be treated as variables unless
@@ -23,11 +23,14 @@ use crate::num::Num;
 /// can pass in just an `f64` if you want.
 ///
 /// ```rust
-/// # use mexprp::{Expression, Context, Answer};
+/// use std::sync::{Arc, RwLock};
+/// use mexprp::{Expression, Context, Answer, SupplementaryDataAdapter};
+/// use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+/// let supp: Arc<RwLock<dyn SupplementaryDataAdapter<f64>>> = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
 /// let mut context: Context<f64> = Context::new();
 /// context.set_var("x", 4.0);
 /// let expr = Expression::parse_ctx("4x", context).unwrap();
-/// let res = expr.eval(None); // Ok(Answer::Single(16.0))
+/// let res = expr.eval(supp); // Ok(Answer::Single(16.0))
 /// # assert_eq!(res.unwrap(), Answer::Single(16.0));
 /// ```
 ///
@@ -40,13 +43,15 @@ use crate::num::Num;
 /// ```rust
 /// # use std::sync::{Arc, RwLock};
 /// use mexprp::{Expression, Context, Term, Calculation, MathError, Answer, SupplementaryDataAdapter};
+/// use mexprp::mock_supplementary_data_adapter::MockSupplementaryDataAdapter;
+/// let supp: Arc<RwLock<dyn SupplementaryDataAdapter<f64>>> = Arc::new(RwLock::new(MockSupplementaryDataAdapter::default()));
 /// let mut context: Context<f64> = Context::new();
-/// context.set_func("sum", |args: &[Term<f64>], ctx: &Context<f64>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<f64>>>>| -> Calculation<f64> {
+/// context.set_func("sum", |args: &[Term<f64>], ctx: &Context<f64>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<f64>>>| -> Calculation<f64> {
 ///     if args.is_empty() { return Err(MathError::IncorrectArguments); }
 ///
 ///     let mut sum = 0.0;
 ///     for arg in args {
-///         let a = arg.eval_ctx(ctx, None)?;
+///         let a = arg.eval_ctx(ctx, Arc::clone(&supp))?;
 ///         match a {
 ///             Answer::Single(n) => sum += n,
 ///             Answer::Multiple(ns) => {
@@ -59,7 +64,7 @@ use crate::num::Num;
 ///     Ok(Answer::Single(sum))
 /// });
 /// let expr = Expression::parse_ctx("sum(5, 6, 7, 8)", context).unwrap();
-/// let res = expr.eval(None); // Ok(Answer::Single(26.0))
+/// let res = expr.eval(Arc::clone(&supp)); // Ok(Answer::Single(26.0))
 /// # assert_eq!(res.unwrap(), Answer::Single(26.0));
 /// ```
 ///
@@ -202,25 +207,25 @@ impl<N: Num> fmt::Debug for Context<N> {
 }
 
 pub(in crate::context) mod funcs {
-	use std::cmp::Ordering;
-	use std::sync::{Arc, RwLock};
+	use crate::answer::Answer;
 	use crate::context::Context;
-	use crate::term::Term;
 	use crate::errors::MathError;
 	use crate::func::Func;
-	use crate::opers::Calculation;
 	use crate::num::Num;
-	use crate::answer::Answer;
+	use crate::opers::Calculation;
 	use crate::supplementary::SupplementaryDataAdapter;
+	use crate::term::Term;
+	use std::cmp::Ordering;
+	use std::sync::{Arc, RwLock};
 
 	pub struct Sin;
 	impl<N: Num + 'static> Func<N> for Sin {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::sin(a, ctx))
 		}
@@ -228,12 +233,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Cos;
 	impl<N: Num + 'static> Func<N> for Cos {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::cos(a, ctx))
 		}
@@ -241,12 +246,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Max;
 	impl<N: Num + 'static> Func<N> for Max {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.is_empty() {
 				return Err(MathError::IncorrectArguments);
 			}
 			let mut extra = Vec::new();
-			let mut max = match args[0].eval_ctx(ctx, None)? {
+			let mut max = match args[0].eval_ctx(ctx, Arc::clone(&supp))? {
 				Answer::Single(n) => n,
 				Answer::Multiple(mut ns) => {
 					let one = ns.pop().unwrap();
@@ -256,9 +261,7 @@ pub(in crate::context) mod funcs {
 			};
 
 			// Try to evaluate the arguments
-			let args: Vec<Answer<N>> = args.iter()
-				.map(|term| term.eval_ctx(ctx, None))
-				.collect::<Result<Vec<Answer<N>>, MathError>>()?;
+			let args: Vec<Answer<N>> = args.iter().map(|term| term.eval_ctx(ctx, Arc::clone(&supp))).collect::<Result<Vec<Answer<N>>, MathError>>()?;
 			let mut new_args = Vec::new();
 			// Push each answer of each argument to `new_args`
 			for a in args {
@@ -279,12 +282,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Min;
 	impl<N: Num + 'static> Func<N> for Min {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.is_empty() {
 				return Err(MathError::IncorrectArguments);
 			}
 			let mut extra = Vec::new();
-			let mut min = match args[0].eval_ctx(ctx, None)? {
+			let mut min = match args[0].eval_ctx(ctx, Arc::clone(&supp))? {
 				Answer::Single(n) => n,
 				Answer::Multiple(mut ns) => {
 					let one = ns.pop().unwrap();
@@ -294,9 +297,7 @@ pub(in crate::context) mod funcs {
 			};
 
 			// Try to evaluate the arguments
-			let args: Vec<Answer<N>> = args.iter()
-				.map(|term| term.eval_ctx(ctx, None))
-				.collect::<Result<Vec<Answer<N>>, MathError>>()?;
+			let args: Vec<Answer<N>> = args.iter().map(|term| term.eval_ctx(ctx, Arc::clone(&supp))).collect::<Result<Vec<Answer<N>>, MathError>>()?;
 			let mut new_args = Vec::new();
 			// Push each answer of each argument to `new_args`
 			for a in args {
@@ -317,12 +318,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Sqrt;
 	impl<N: Num + 'static> Func<N> for Sqrt {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::sqrt(a, ctx))
 		}
@@ -330,13 +331,13 @@ pub(in crate::context) mod funcs {
 
 	pub struct Nrt;
 	impl<N: Num + 'static> Func<N> for Nrt {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 2 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
-			let b = args[1].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, Arc::clone(&supp))?;
+			let b = args[1].eval_ctx(ctx, Arc::clone(&supp))?;
 
 			a.op(&b, |a, b| Num::nrt(a, b, ctx))
 		}
@@ -344,12 +345,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Abs;
 	impl<N: Num + 'static> Func<N> for Abs {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::abs(a, ctx))
 		}
@@ -357,12 +358,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Tan;
 	impl<N: Num + 'static> Func<N> for Tan {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::tan(a, ctx))
 		}
@@ -370,12 +371,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Asin;
 	impl<N: Num + 'static> Func<N> for Asin {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::asin(a, ctx))
 		}
@@ -383,12 +384,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Acos;
 	impl<N: Num + 'static> Func<N> for Acos {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::acos(a, ctx))
 		}
@@ -396,12 +397,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Atan;
 	impl<N: Num + 'static> Func<N> for Atan {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::atan(a, ctx))
 		}
@@ -409,13 +410,13 @@ pub(in crate::context) mod funcs {
 
 	pub struct Atan2;
 	impl<N: Num + 'static> Func<N> for Atan2 {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 2 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
-			let b = args[1].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, Arc::clone(&supp))?;
+			let b = args[1].eval_ctx(ctx, Arc::clone(&supp))?;
 
 			a.op(&b, |a, b| Num::atan2(a, b, ctx))
 		}
@@ -423,12 +424,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Floor;
 	impl<N: Num + 'static> Func<N> for Floor {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::floor(a, ctx))
 		}
@@ -436,12 +437,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Ceil;
 	impl<N: Num + 'static> Func<N> for Ceil {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::ceil(a, ctx))
 		}
@@ -449,12 +450,12 @@ pub(in crate::context) mod funcs {
 
 	pub struct Round;
 	impl<N: Num + 'static> Func<N> for Round {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 1 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, supp)?;
 
 			a.unop(|a| Num::round(a, ctx))
 		}
@@ -462,13 +463,13 @@ pub(in crate::context) mod funcs {
 
 	pub struct Log;
 	impl<N: Num + 'static> Func<N> for Log {
-		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, _supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+		fn eval(&self, args: &[Term<N>], ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 			if args.len() != 2 {
 				return Err(MathError::IncorrectArguments);
 			}
 
-			let a = args[0].eval_ctx(ctx, None)?;
-			let b = args[1].eval_ctx(ctx, None)?;
+			let a = args[0].eval_ctx(ctx, Arc::clone(&supp))?;
+			let b = args[1].eval_ctx(ctx, Arc::clone(&supp))?;
 
 			a.op(&b, |a, b| Num::log(a, b, ctx))
 		}

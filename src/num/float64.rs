@@ -1,11 +1,11 @@
-use std::f64;
 use std::cmp::Ordering;
+use std::f64;
 
-use crate::opers::Calculation;
-use crate::errors::MathError;
-use crate::num::Num;
 use crate::answer::Answer;
 use crate::context::Context;
+use crate::errors::MathError;
+use crate::num::Num;
+use crate::opers::Calculation;
 
 impl Num for f64 {
 	fn from_f64(t: f64, _ctx: &Context<Self>) -> Calculation<Self> {
@@ -73,11 +73,7 @@ impl Num for f64 {
 	fn sqrt(&self, ctx: &Context<Self>) -> Calculation<Self> {
 		let sqrt = f64::sqrt(*self);
 
-		Ok(if ctx.cfg.sqrt_both {
-			Answer::Multiple(vec![sqrt, -sqrt])
-		} else {
-			Answer::Single(sqrt)
-		})
+		Ok(if ctx.cfg.sqrt_both { Answer::Multiple(vec![sqrt, -sqrt]) } else { Answer::Single(sqrt) })
 	}
 
 	fn abs(&self, _ctx: &Context<Self>) -> Calculation<Self> {

@@ -1,11 +1,11 @@
 use std::cmp::Ordering;
 
-use rug::Rational;
-use crate::opers::Calculation;
-use crate::errors::MathError;
 use crate::answer::Answer;
-use crate::num::Num;
 use crate::context::Context;
+use crate::errors::MathError;
+use crate::num::Num;
+use crate::opers::Calculation;
+use rug::Rational;
 
 impl Num for Rational {
 	fn from_f64(t: f64, _ctx: &Context<Self>) -> Calculation<Self> {
@@ -59,28 +59,28 @@ impl Num for Rational {
 
 		Ok(Answer::Single(r))
 	}
-	
+
 	fn abs(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Rational::from(self.abs_ref());
-		
+
 		Ok(Answer::Single(r))
 	}
-	
+
 	fn floor(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Rational::from(self.floor_ref());
-		
+
 		Ok(Answer::Single(r))
 	}
-	
+
 	fn ceil(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Rational::from(self.ceil_ref());
-		
+
 		Ok(Answer::Single(r))
 	}
-	
+
 	fn round(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Rational::from(self.round_ref());
-		
+
 		Ok(Answer::Single(r))
 	}
 }

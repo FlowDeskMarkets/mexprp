@@ -31,28 +31,28 @@
 //! To see the progress on implementations of `Num` types, see the the [issues on GitHub](https://github.com/IntrepidPig/mexprp/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3Anumber)
 //! with the label "number"
 
+use std::cmp::Ordering;
 use std::fmt;
 use std::marker::Sized;
-use std::cmp::Ordering;
 
+mod complexfloat;
 #[cfg(feature = "rug")]
 mod complexrugrat;
-#[cfg(feature = "rug")]
-mod rugrat;
+mod decimal;
+mod float64;
 #[cfg(feature = "rug")]
 mod rugcomplex;
-mod complexfloat;
-mod float64;
-mod decimal;
-
 #[cfg(feature = "rug")]
-pub use self::complexrugrat::ComplexRugRat;
+mod rugrat;
+
 #[cfg(feature = "rug")]
 pub use self::complexfloat::ComplexFloat;
+#[cfg(feature = "rug")]
+pub use self::complexrugrat::ComplexRugRat;
 
-use crate::opers::Calculation;
-use crate::errors::MathError;
 use crate::context::Context;
+use crate::errors::MathError;
+use crate::opers::Calculation;
 
 /// A `Num` represents any type that can be used in an expression. It requires lots of operations to
 /// be implemented for it, any of which can fail, as well as the traits: Debug, Clone, Display, PartialOrd,
@@ -78,10 +78,7 @@ where
 		})
 	}
 	fn add(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Addition".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Addition".to_string(), num_type: Self::typename() })
 	}
 	fn sub(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
 		Err(MathError::Unimplemented {
@@ -96,16 +93,10 @@ where
 		})
 	}
 	fn div(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Division".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Division".to_string(), num_type: Self::typename() })
 	}
 	fn pow(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Exponent".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Exponent".to_string(), num_type: Self::typename() })
 	}
 	fn sqrt(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		Err(MathError::Unimplemented {
@@ -114,10 +105,7 @@ where
 		})
 	}
 	fn nrt(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Nth Root".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Nth Root".to_string(), num_type: Self::typename() })
 	}
 	fn abs(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		Err(MathError::Unimplemented {
@@ -126,28 +114,16 @@ where
 		})
 	}
 	fn sin(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Sine".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Sine".to_string(), num_type: Self::typename() })
 	}
 	fn cos(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Cosine".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Cosine".to_string(), num_type: Self::typename() })
 	}
 	fn tan(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Tangent".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Tangent".to_string(), num_type: Self::typename() })
 	}
 	fn asin(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Arc Sine".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Arc Sine".to_string(), num_type: Self::typename() })
 	}
 	fn acos(&self, _ctx: &Context<Self>) -> Calculation<Self> {
 		Err(MathError::Unimplemented {
@@ -162,28 +138,16 @@ where
 		})
 	}
 	fn atan2(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Atan2".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Atan2".to_string(), num_type: Self::typename() })
 	}
 	fn floor(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Flooring".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Flooring".to_string(), num_type: Self::typename() })
 	}
 	fn ceil(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Ceiling".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Ceiling".to_string(), num_type: Self::typename() })
 	}
 	fn round(&self, _ctx: &Context<Self>) -> Calculation<Self> {
-		Err(MathError::Unimplemented {
-			op: "Rounding".to_string(),
-			num_type: Self::typename(),
-		})
+		Err(MathError::Unimplemented { op: "Rounding".to_string(), num_type: Self::typename() })
 	}
 	fn log(&self, _other: &Self, _ctx: &Context<Self>) -> Calculation<Self> {
 		Err(MathError::Unimplemented {

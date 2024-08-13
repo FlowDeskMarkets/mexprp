@@ -1,10 +1,11 @@
-use std::fmt::Debug;
-
-use crate::term::Term;
+use crate::answer::Answer;
 use crate::context::Context;
 use crate::errors::MathError;
 use crate::num::Num;
-use crate::answer::Answer;
+use crate::term::Term;
+use crate::SupplementaryDataAdapter;
+use std::fmt::Debug;
+use std::sync::{Arc, RwLock};
 
 /// The result of an evaluation
 pub type Calculation<N> = Result<Answer<N>, MathError>;
@@ -12,7 +13,7 @@ pub type Calculation<N> = Result<Answer<N>, MathError>;
 /// A trait for operations
 pub trait Operate<N: Num>: Debug {
 	/// Evalute the operation or return an error
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N>;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N>;
 	/// Convert the operation to a string representation
 	fn to_string(&self) -> String;
 }
@@ -24,13 +25,11 @@ pub(crate) struct Add<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Add<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
-		let b = self.b.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, Arc::clone(&supp))?;
+		let b = self.b.eval_ctx(ctx, Arc::clone(&supp))?;
 
-		a.op(&b, |a, b| {
-			a.add(b, ctx)
-		})
+		a.op(&b, |a, b| a.add(b, ctx))
 	}
 
 	fn to_string(&self) -> String {
@@ -45,13 +44,11 @@ pub(crate) struct Sub<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Sub<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
-		let b = self.b.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, Arc::clone(&supp))?;
+		let b = self.b.eval_ctx(ctx, Arc::clone(&supp))?;
 
-		a.op(&b, |a, b| {
-			a.sub(b, ctx)
-		})
+		a.op(&b, |a, b| a.sub(b, ctx))
 	}
 
 	fn to_string(&self) -> String {
@@ -66,13 +63,11 @@ pub(crate) struct Mul<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Mul<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
-		let b = self.b.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, Arc::clone(&supp))?;
+		let b = self.b.eval_ctx(ctx, Arc::clone(&supp))?;
 
-		a.op(&b, |a, b| {
-			a.mul(b, ctx)
-		})
+		a.op(&b, |a, b| a.mul(b, ctx))
 	}
 
 	fn to_string(&self) -> String {
@@ -87,13 +82,11 @@ pub(crate) struct Div<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Div<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
-		let b = self.b.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, Arc::clone(&supp))?;
+		let b = self.b.eval_ctx(ctx, Arc::clone(&supp))?;
 
-		a.op(&b, |a, b| {
-			a.div(b, ctx)
-		})
+		a.op(&b, |a, b| a.div(b, ctx))
 	}
 
 	fn to_string(&self) -> String {
@@ -108,13 +101,11 @@ pub(crate) struct Pow<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Pow<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
-		let b = self.b.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, Arc::clone(&supp))?;
+		let b = self.b.eval_ctx(ctx, Arc::clone(&supp))?;
 
-		a.op(&b, |a, b| {
-			a.pow(b, ctx)
-		})
+		a.op(&b, |a, b| a.pow(b, ctx))
 	}
 
 	fn to_string(&self) -> String {
@@ -129,16 +120,12 @@ pub(crate) struct PlusMinus<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for PlusMinus<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
-		let b = self.b.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, Arc::clone(&supp))?;
+		let b = self.b.eval_ctx(ctx, Arc::clone(&supp))?;
 
-		let adds = a.op(&b, |a, b| {
-			a.add(b, ctx)
-		})?;
-		let subs = a.op(&b, |a, b| {
-			a.sub(b, ctx)
-		})?;
+		let adds = a.op(&b, |a, b| a.add(b, ctx))?;
+		let subs = a.op(&b, |a, b| a.sub(b, ctx))?;
 
 		Ok(adds.join(subs))
 	}
@@ -154,12 +141,10 @@ pub(crate) struct Neg<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Neg<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, supp)?;
 
-		a.op(&N::from_f64(-1.0, ctx)?, |a, b| {
-			a.mul(b, ctx)
-		})
+		a.op(&N::from_f64(-1.0, ctx)?, |a, b| a.mul(b, ctx))
 	}
 
 	fn to_string(&self) -> String {
@@ -173,8 +158,8 @@ pub(crate) struct Pos<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Pos<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, supp)?;
 
 		Ok(a)
 	}
@@ -190,8 +175,8 @@ pub(crate) struct PosNeg<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for PosNeg<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, supp)?;
 
 		a.unop(|a| {
 			let pos = a;
@@ -212,7 +197,7 @@ pub(crate) struct Fact<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Fact<N> {
-	fn eval(&self, _ctx: &Context<N>) -> Calculation<N> {
+	fn eval(&self, _ctx: &Context<N>, _supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		Err(MathError::Unimplemented {
 			op: "Factorial".to_string(),
 			num_type: "Any".to_string(),
@@ -230,12 +215,10 @@ pub(crate) struct Percent<N: Num> {
 }
 
 impl<N: Num + 'static> Operate<N> for Percent<N> {
-	fn eval(&self, ctx: &Context<N>) -> Calculation<N> {
-		let a = self.a.eval_ctx(ctx, None)?;
+	fn eval(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
+		let a = self.a.eval_ctx(ctx, supp)?;
 
-		a.op(&N::from_f64(0.01, ctx)?, |a, b| {
-			a.mul(b, ctx)
-		})
+		a.op(&N::from_f64(0.01, ctx)?, |a, b| a.mul(b, ctx))
 	}
 
 	fn to_string(&self) -> String {

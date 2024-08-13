@@ -1,9 +1,9 @@
+use crate::opers::*;
 use std::fmt;
 use std::sync::{Arc, RwLock};
-use crate::opers::*;
 
-use crate::errors::*;
 use crate::context::*;
+use crate::errors::*;
 use crate::num::*;
 use crate::supplementary::SupplementaryDataAdapter;
 use crate::term::*;
@@ -33,20 +33,16 @@ impl<N: Num + 'static> Expression<N> {
 		let raw = raw.trim();
 		let term = Term::parse_ctx(raw, &ctx)?;
 
-		Ok(Self {
-			string: raw.to_string(),
-			ctx,
-			term,
-		})
+		Ok(Self { string: raw.to_string(), ctx, term })
 	}
 
 	/// Evaluate the expression
-	pub fn eval(&self, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+	pub fn eval(&self, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		self.eval_ctx(&self.ctx, supp)
 	}
 
 	/// Evaluate the expression with the given context
-	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Option<Arc<RwLock<dyn SupplementaryDataAdapter<N>>>>) -> Calculation<N> {
+	pub fn eval_ctx(&self, ctx: &Context<N>, supp: Arc<RwLock<dyn SupplementaryDataAdapter<N>>>) -> Calculation<N> {
 		self.term.eval_ctx(ctx, supp)
 	}
 }

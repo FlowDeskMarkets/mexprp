@@ -1,6 +1,6 @@
+use crate::num::Num;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use crate::num::Num;
 
 /// A trait for adapter to update and access supplementary data
 pub trait SupplementaryDataAdapter<N: Num>: Debug {
@@ -9,9 +9,9 @@ pub trait SupplementaryDataAdapter<N: Num>: Debug {
 	/// Add new supplementary data
 	fn push(&mut self, key: String, value: SupplementaryDataType<N>);
 	/// Optional; remove first X data items
-	fn prune(&mut self, key: String, length: usize) {}
+	fn prune(&mut self, _key: String, _length: usize) {}
 	/// Optional; replace entire data set
-	fn set(&mut self, key: String, vec: &Vec<SupplementaryDataType<N>>) {}
+	fn set(&mut self, _key: String, _vec: &Vec<SupplementaryDataType<N>>) {}
 }
 
 /// Supported Data Type for Supplementary
@@ -24,5 +24,5 @@ pub enum SupplementaryDataType<N: Num> {
 	/// Vector
 	Vector(Vec<SupplementaryDataType<N>>),
 	/// Map
-	Map(HashMap<String, SupplementaryDataType<N>>)
+	Map(HashMap<String, SupplementaryDataType<N>>),
 }

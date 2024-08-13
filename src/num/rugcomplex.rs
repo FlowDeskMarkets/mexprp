@@ -1,13 +1,12 @@
 use std::cmp::Ordering;
 
-
-use rug::Complex;
-use rug::ops::Pow;
-use crate::opers::Calculation;
-use crate::errors::MathError;
 use crate::answer::Answer;
-use crate::num::Num;
 use crate::context::Context;
+use crate::errors::MathError;
+use crate::num::Num;
+use crate::opers::Calculation;
+use rug::ops::Pow;
+use rug::Complex;
 
 impl Num for Complex {
 	fn from_f64(t: f64, ctx: &Context<Self>) -> Calculation<Self> {
@@ -63,11 +62,7 @@ impl Num for Complex {
 	fn sqrt(&self, ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Complex::with_val(ctx.cfg.precision, Complex::sqrt_ref(self));
 
-		Ok(if ctx.cfg.sqrt_both {
-			Answer::Multiple(vec![r.clone(), -r])
-		} else {
-			Answer::Single(r)
-		})
+		Ok(if ctx.cfg.sqrt_both { Answer::Multiple(vec![r.clone(), -r]) } else { Answer::Single(r) })
 	}
 
 	fn abs(&self, ctx: &Context<Self>) -> Calculation<Self> {
@@ -120,20 +115,20 @@ impl Num for Complex {
 
 		Ok(Answer::Single(a))
 	}
-	
+
 	fn ceil(&self, ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Complex::real(self).ceil_ref();
 		let i = Complex::imag(self).ceil_ref();
 		let a = Complex::with_val(ctx.cfg.precision, (r, i));
-		
+
 		Ok(Answer::Single(a))
 	}
-	
+
 	fn round(&self, ctx: &Context<Self>) -> Calculation<Self> {
 		let r = Complex::real(self).round_ref();
 		let i = Complex::imag(self).round_ref();
 		let a = Complex::with_val(ctx.cfg.precision, (r, i));
-		
+
 		Ok(Answer::Single(a))
 	}
 

@@ -31,8 +31,8 @@ pub(crate) enum Post {
 impl Op {
 	pub fn precedence(&self) -> i32 {
 		use self::In::*;
-		use self::Pre::*;
 		use self::Post::*;
+		use self::Pre::*;
 		match *self {
 			Op::In(ref op) => match *op {
 				Pow => 4,
@@ -51,8 +51,8 @@ impl Op {
 
 	pub fn is_left_associative(&self) -> bool {
 		use self::In::*;
-		use self::Pre::*;
 		use self::Post::*;
+		use self::Pre::*;
 		match *self {
 			Op::In(ref op) => match *op {
 				Pow => false,
@@ -70,8 +70,8 @@ impl Op {
 
 	pub fn to_string(&self) -> String {
 		use self::In::*;
-		use self::Pre::*;
 		use self::Post::*;
+		use self::Pre::*;
 		String::from(match *self {
 			Op::In(ref op) => match *op {
 				Pow => "^",
