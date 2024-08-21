@@ -1,5 +1,5 @@
 use crate::num::Num;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::fmt::Debug;
 
 /// A trait for adapter to update and access supplementary data
@@ -25,4 +25,6 @@ pub enum SupplementaryDataType<N: Num> {
 	Vector(Vec<SupplementaryDataType<N>>),
 	/// Map
 	Map(HashMap<String, SupplementaryDataType<N>>),
+	/// Double-ended queue
+	Deque(VecDeque<SupplementaryDataType<N>>),
 }
