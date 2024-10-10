@@ -58,6 +58,12 @@ pub enum MathError {
 	/// Another type of Error occurred.
 	#[error("An unknown error occurred during evaluation")]
 	Other,
+	/// Custom error message
+	#[error("MathError: {message}")]
+	Custom {
+		/// Error message
+		message: String,
+	},
 }
 
 /// An error that occurs when evaluating a string
